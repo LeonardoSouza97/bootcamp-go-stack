@@ -1,10 +1,12 @@
 import * as Yup from 'yup';
-import { isBefore, startOfHour, parseISO, format } from 'date-fns';
+import { isBefore, startOfHour, parseISO, format, subHours } from 'date-fns';
 import { pt } from 'date-fns/locale/pt';
 import Appointment from '../models/Appointment';
 import User from '../models/User';
 import File from '../models/File';
 import Notification from '../schemas/Notification';
+import Queue from '../../lib/Queue';
+import CancellationMail from '../jobs/CancellationMail';
 
 class AppointmentController {
   async index(req, res) {
@@ -97,6 +99,48 @@ class AppointmentController {
     });
 
     return res.json(provider);
+  }
+
+  async delete(req, res) {
+    const appointment = await Appointment.findByPk(req.params.id, {
+      include: [
+        {
+          model: User,
+          as: `provider`,
+          attributes: [`name`, `email`],
+        },
+        { model: User, as: 'user', attributes: [`name`] },
+      ],
+    });
+
+    if (!appointment) {
+      res.status(401).json({ error: 'Agendamento não encontrado' });
+    }
+
+    if (appointment.user_id !== req.userId) {
+      res
+        .status(401)
+        .json({ error: 'Você só pode cancelar agendamentos próprios' });
+    }
+
+    const dateWithSub = subHours(appointment.date, 2);
+
+    if (isBefore(dateWithSub, new Date())) {
+      return res.status(401).json({
+        error:
+          'Você só pode cancelar agendamentos com até 2 horas antes do horário do agendamento',
+      });
+    }
+
+    appointment.canceled_at = new Date();
+
+    await appointment.save(appointment);
+
+    await Queue.add(CancellationMail.key, {
+      appointment,
+    });
+
+    return res.json(appointment);
   }
 }
 
