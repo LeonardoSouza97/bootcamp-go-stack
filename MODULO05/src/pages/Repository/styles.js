@@ -11,6 +11,13 @@ export const Loading = styled.div`
 
 `;
 
+export const Filters = styled.select`
+  display: flex;
+  align-items:center;
+  margin-left: auto;
+  font-size: 14px;
+`;
+
 export const Owner = styled.div`
   display: flex;
   align-items: center;
@@ -103,8 +110,25 @@ export const IssueList = styled.ul`
         padding: 3px 4px;
       }
     }
-
+   }
   }
+
+`;
+
+export const NavegationButtons = styled.div`
+  display: flex;
+  margin-left: auto;
+
+  button.previous{
+    display: ${props => props.disabled ? 'none' : 'block'}
   }
 
+  button {
+    width: 80px;
+    margin: 2px 5px;
+    font-size: 15px;
+    border-radius: 2px;
+    background: #999;
+    color: #EEE;
+  }
 `;

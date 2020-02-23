@@ -38,9 +38,9 @@ margin-top: 30px;
 display: flex;
 align-content: center;
 
-input{
+input {
   display: flex;
-  border: 1px solid;
+  border: 1px solid ${props => props.error ? 'red' : '#eee'};
   flex: 1;
   flex-direction: row;
   padding: 20px 15px;

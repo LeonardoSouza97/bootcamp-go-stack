@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import ProtoTypes from 'prop-types'
 import api from '../../services/api';
 
-import { Loading, Owner, IssueList } from './styles';
+import { Loading, Owner, IssueList, Filters, NavegationButtons } from './styles';
 import Container from '../../Components/Container';
 
 export default class Repository extends Component {
@@ -19,10 +19,13 @@ export default class Repository extends Component {
   state = {
     repository: {},
     issues: [],
-    loading: true
+    loading: true,
+    currentPage: 1,
+    state: 'all'
   }
 
   async componentDidMount() {
+    const { state } = this.state;
     const { match } = this.props;
 
     const repoName = decodeURIComponent(match.params.repository);
@@ -31,22 +34,48 @@ export default class Repository extends Component {
       api.get(`/repos/${repoName}`),
       api.get(`/repos/${repoName}/issues`, {
         params: {
-          state: `open`,
+          state: state,
           per_page: 5
         }
       })
     ]);
 
     this.setState({ repository: repository.data, issues: issues.data, loading: false });
+  }
 
-    console.log(repository);
-    console.log(issues);
+  async componentDidUpdate(_, prevState) {
+    const { state, currentPage } = this.state;
+    const { match } = this.props;
 
+    const repoName = decodeURIComponent(match.params.repository);
+
+    const [repository, issues] = await Promise.all([
+      api.get(`/repos/${repoName}`),
+      api.get(`/repos/${repoName}/issues`, {
+        params: {
+          state: state,
+          per_page: 5,
+          page: currentPage
+        }
+      })
+    ]);
+
+    this.setState({ repository: repository.data, issues: issues.data, loading: false });
+  }
+
+  filtersIssues = async e => {
+    this.setState({ state: e.target.value });
+  }
+
+  changePage = async e => {
+    const option = e.target.value;
+    var { currentPage } = this.state;
+
+    this.setState({ currentPage: option !== 'previous' ? ++currentPage : --currentPage });
   }
 
   render() {
-    const { repository, issues, loading } = this.state;
-    const { match } = this.props;
+    const { repository, issues, loading, currentPage } = this.state;
 
     if (loading) {
       return <Loading>Carregando</Loading>;
@@ -60,6 +89,15 @@ export default class Repository extends Component {
           <h1>{repository.name}</h1>
           <p>{repository.description}</p>
         </Owner>
+        <Filters onChange={this.filtersIssues}>
+          <option value="all">Todos</option>
+          <option value="open">Abertos</option>
+          <option value="closed">Fechados</option>
+        </Filters>
+        <NavegationButtons disabled={currentPage === 1}>
+          <button className='previous' onClick={this.changePage} value='previous'>Anterior</button>
+          <button onClick={this.changePage} value='next'>Próximo</button>
+        </NavegationButtons>
         <IssueList>
           {issues.map(issue => (
             <li key={String(issue.id)}>
