@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom'
 import ProtoTypes from 'prop-types'
 import api from '../../services/api';
 
-// import { Container } from './styles';
+import { Loading, Owner } from './styles';
+import Container from '../../Components/Container';
 
 export default class Repository extends Component {
 
@@ -46,8 +48,19 @@ export default class Repository extends Component {
     const { repository, issues, loading } = this.state;
     const { match } = this.props;
 
+    if (loading) {
+      return <Loading>Carregando</Loading>;
+    }
+
     return (
-      <h1>Repository: {decodeURIComponent(match.params.repository)}</h1>
+      <Container>
+        <Owner>
+          <Link to='/'>Voltar aos reposítorios</Link>
+          <img src={repository.owner.avatar_url} alt={repository.owner.login}></img>
+          <h1>{repository.name}</h1>
+          <p>{repository.description}</p>
+        </Owner>
+      </Container>
     );
   }
 }
