@@ -27,10 +27,10 @@ export default class User extends Component {
     this.load();
   }
 
-  handleNavigate = respository => {
+  handleNavigate = repository => {
     const { navigation } = this.props;
 
-    navigation.navigate('Repository', { respository });
+    navigation.navigate('Repository', { repository });
   }
 
   load = async (page = 1) => {
@@ -41,7 +41,7 @@ export default class User extends Component {
     const response = await api.get(`users/${user.login}/starred`, { params: { page } });
 
     this.setState({
-      stars: page >= 2 ? [...stars, ...response.data] : response.data, loading: false, page
+      stars: page >= 2 ? [...stars, ...response.data] : response.data, loading: false, page, refreshing: false
     });
   }
 
@@ -52,7 +52,7 @@ export default class User extends Component {
   }
 
   refreshList = () => {
-    this.state({ stars: [], refreshing: true }, this.load);
+    this.setState({ stars: [], refreshing: true }, this.load);
   }
 
   render() {
@@ -69,7 +69,8 @@ export default class User extends Component {
           <Name>{user.name}</Name>
           <Bio>{user.bio}</Bio>
         </Header>
-        {loading ? <ActivityIndicator color='#999' size={70}></ActivityIndicator> :
+        {loading ? <ActivityIndicator color='#999' size={70}>
+        </ActivityIndicator> :
           <Stars
             data={stars}
             keyExtractor={star => String(star.id)}
@@ -79,7 +80,8 @@ export default class User extends Component {
             refreshing={refreshing}
             renderItem={({ item }) => (
               <Starred onPress={() => this.handleNavigate(item)}>
-                <OwnerAvatar source={item ? { uri: item.owner.avatar_url } : ''}></OwnerAvatar>
+                <OwnerAvatar source={item ? { uri: item.owner.avatar_url } : ''}>
+                </OwnerAvatar>
                 <Info>
                   <Title>{item.name}</Title>
                   <Author>{item.owner.login}</Author>
