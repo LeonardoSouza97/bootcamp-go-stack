@@ -1,83 +1,49 @@
-import React from 'react';
+import React, { Component } from 'react';
+
+import api from '../../services/api';
 
 import { ProductList } from './styles';
 import { MdShoppingBasket } from 'react-icons/md';
 
-export default function Home() {
+import { formatPrice } from '../../util/format';
+
+export default class Home extends Component {
+  state = {
+    products: []
+  }
+
+  async componentDidMount() {
+    const response = await api.get('products');
+
+    const data = response.data.map(product => ({
+      ...product,
+      priceFormmated: formatPrice(product.price)
+    }));
+
+    this.setState({ products: data });
+  }
+
+render() {
+  const { products } = this.state;
+
   return (
     <ProductList>
-      <li>
-        <img src="https://static.netshoes.com.br/produtos/tenis-de-caminhada-leve-confortavel/06/E74-0492-006/E74-0492-006_zoom2.jpg?ims=326x" alt="Tênis" />
-        <strong>Tênis esportivo</strong>
-        <span>R$129,00</span>
+      {products.map(product => (
+        <li key={product.id}>
+          <img src={product.image} alt="Tênis" />
+          <strong>{product.title}</strong>
+          <span>{product.priceFormmated}</span>
 
-        <button type='button'>
-          <div>
-            <MdShoppingBasket size={16} color="#FFF" /> 3
-          </div>
-          <span>Adicionar ao carrinho</span>
-        </button>
-      </li>
-      <li>
-        <img src="https://static.netshoes.com.br/produtos/tenis-de-caminhada-leve-confortavel/06/E74-0492-006/E74-0492-006_zoom2.jpg?ims=326x" alt="Tênis" />
-        <strong>Tênis esportivo</strong>
-        <span>R$129,00</span>
-
-        <button type='button'>
-          <div>
-            <MdShoppingBasket size={16} color="#FFF" /> 3
-          </div>
-          <span>Adicionar ao carrinho</span>
-        </button>
-      </li>
-      <li>
-        <img src="https://static.netshoes.com.br/produtos/tenis-de-caminhada-leve-confortavel/06/E74-0492-006/E74-0492-006_zoom2.jpg?ims=326x" alt="Tênis" />
-        <strong>Tênis esportivo</strong>
-        <span>R$129,00</span>
-
-        <button type='button'>
-          <div>
-            <MdShoppingBasket size={16} color="#FFF" /> 3
-          </div>
-          <span>Adicionar ao carrinho</span>
-        </button>
-      </li>
-      <li>
-        <img src="https://static.netshoes.com.br/produtos/tenis-de-caminhada-leve-confortavel/06/E74-0492-006/E74-0492-006_zoom2.jpg?ims=326x" alt="Tênis" />
-        <strong>Tênis esportivo</strong>
-        <span>R$129,00</span>
-
-        <button type='button'>
-          <div>
-            <MdShoppingBasket size={16} color="#FFF" /> 3
-          </div>
-          <span>Adicionar ao carrinho</span>
-        </button>
-      </li>
-      <li>
-        <img src="https://static.netshoes.com.br/produtos/tenis-de-caminhada-leve-confortavel/06/E74-0492-006/E74-0492-006_zoom2.jpg?ims=326x" alt="Tênis" />
-        <strong>Tênis esportivo</strong>
-        <span>R$129,00</span>
-
-        <button type='button'>
-          <div>
-            <MdShoppingBasket size={16} color="#FFF" /> 3
-          </div>
-          <span>Adicionar ao carrinho</span>
-        </button>
-      </li>
-      <li>
-        <img src="https://static.netshoes.com.br/produtos/tenis-de-caminhada-leve-confortavel/06/E74-0492-006/E74-0492-006_zoom2.jpg?ims=326x" alt="Tênis" />
-        <strong>Tênis esportivo</strong>
-        <span>R$129,00</span>
-
-        <button type='button'>
-          <div>
-            <MdShoppingBasket size={16} color="#FFF" /> 3
-          </div>
-          <span>Adicionar ao carrinho</span>
-        </button>
-      </li>
+          <button type='button'>
+            <div>
+              <MdShoppingBasket size={16} color="#FFF" /> 3
+            </div>
+            <span>Adicionar ao carrinho</span>
+          </button>
+        </li>
+      ))}
     </ProductList>
   );
+}
+
 }
