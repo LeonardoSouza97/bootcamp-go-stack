@@ -7,7 +7,9 @@ import { MdShoppingBasket } from 'react-icons/md';
 
 import { formatPrice } from '../../util/format';
 
-export default class Home extends Component {
+import { connect } from 'react-redux';
+
+class Home extends Component {
   state = {
     products: []
   }
@@ -23,27 +25,35 @@ export default class Home extends Component {
     this.setState({ products: data });
   }
 
-render() {
-  const { products } = this.state;
+  handleAddProduct = product => {
+    const { dispatch } = this.props;
 
-  return (
-    <ProductList>
-      {products.map(product => (
-        <li key={product.id}>
-          <img src={product.image} alt="Tênis" />
-          <strong>{product.title}</strong>
-          <span>{product.priceFormmated}</span>
+    dispatch({ type: 'ADD_TO_CART', product })
+  }
 
-          <button type='button'>
-            <div>
-              <MdShoppingBasket size={16} color="#FFF" /> 3
+  render() {
+    const { products } = this.state;
+
+    return (
+      <ProductList>
+        {products.map(product => (
+          <li key={product.id}>
+            <img src={product.image} alt="Tênis" />
+            <strong>{product.title}</strong>
+            <span>{product.priceFormmated}</span>
+
+            <button type='button' onClick={() => this.handleAddProduct(product)}>
+              <div>
+                <MdShoppingBasket size={16} color="#FFF" /> 3
             </div>
-            <span>Adicionar ao carrinho</span>
-          </button>
-        </li>
-      ))}
-    </ProductList>
-  );
-}
+              <span>Adicionar ao carrinho</span>
+            </button>
+          </li>
+        ))}
+      </ProductList>
+    );
+  }
 
 }
+
+export default connect()(Home);
