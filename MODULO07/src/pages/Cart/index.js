@@ -2,20 +2,34 @@ import React from 'react';
 
 import { MdDelete, MdRemoveCircleOutline, MdAddCircleOutline } from 'react-icons/md';
 
+import { bindActionCreators } from 'redux';
+
 import { connect } from 'react-redux';
 import { Container, ProductTable, Total } from './styles';
 
+import { formatPrice } from '../../util/format';
 
-function Cart({ cart, dispatch }) {
+import * as cartActions from '../../store/models/cart/actions';
+
+
+function Cart({ cart, total, removeFromToCart, updateAmount }) {
+  function increment(product) {
+    updateAmount(product.id, product.amount + 1);
+  }
+
+  function decrement(product) {
+    updateAmount(product.id, product.amount - 1);
+  }
+
   return (
     <Container>
       <ProductTable>
         <thead>
-          <th />
+          <th> </th>
           <th>PRODUTO</th>
           <th>QTD</th>
           <th>SUBTOTAL</th>
-          <th />
+          <th> </th>
         </thead>
         <tbody>
           {cart.map(product => (
@@ -32,21 +46,21 @@ function Cart({ cart, dispatch }) {
               <td>
                 <div>
                   <button type='button'>
-                    <MdRemoveCircleOutline size={20} color="#7159c1" />
+                    <MdRemoveCircleOutline onClick={() => decrement(product)} size={20} color="#7159c1" />
                   </button>
                   <input type="number" readOnly value={product.amount} />
                   <button type='button'>
-                    <MdAddCircleOutline size={20} color="#7159c1" />
+                    <MdAddCircleOutline onClick={() => increment(product)} size={20} color="#7159c1" />
                   </button>
                 </div>
               </td>
               <td>
-                <strong>R$258,80</strong>
+                <strong>{product.subtotal}</strong>
               </td>
               <td>
                 <div>
                   <button type='button'>
-                    <MdDelete size={20} color="#7159c1" onClick={() => dispatch({type: 'REMOVE_FROM_CART', id : product.id})}/>
+                    <MdDelete size={20} color="#7159c1" onClick={() => removeFromToCart(product.id)} />
                   </button>
                 </div>
               </td>
@@ -58,7 +72,7 @@ function Cart({ cart, dispatch }) {
         <button type='button'>Finalizar pedido</button>
         <Total>
           <span>TOTAL</span>
-          <strong>R$129,90</strong>
+          <strong>{total}</strong>
         </Total>
       </footer>
     </Container >
@@ -66,7 +80,11 @@ function Cart({ cart, dispatch }) {
 }
 
 const mapStateToProps = state => ({
-  cart: state.cart
+  cart: state.cart.map(product => ({ ...product, subtotal: formatPrice(product.amount * product.price), })),
+  total: formatPrice(state.cart.reduce((total, product) => { return total + product.amount * product.price }, 0))
 });
 
-export default connect(mapStateToProps)(Cart);
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(cartActions, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(Cart);
